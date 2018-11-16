@@ -1,0 +1,7 @@
+app_settings:
+  port: 1337
+  host: localhost
+  debug: True
+
+model_settings:
+  path: mock
