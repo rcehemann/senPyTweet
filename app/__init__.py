@@ -10,12 +10,21 @@ def load_model(path=None, **kwargs):
 	load the sentiment model from path,
 	passing other arguments onward
 	"""
-	if path == 'spaCy/default.pickle':
-		import pickle
-		return pickle.load(open(model_path, 'rb'))
+	if 'spaCy' in path:
+		import spacy
+		nlp = spacy.load(path)
+
+		def predict(tweet):
+			return nlp(tweet).cats['POSITIVE']
+
+		nlp.predict = predict
+
+		return nlp
+
 	elif path == 'mock':
 		from .models.mock.mock_sentiment import MockSentimentModel as MSM
 		return MSM()
+
 	else:
 		# need to detect model type and/or use specifications from config.yaml
 		return load_model(path='mock')
@@ -29,14 +38,32 @@ def make_app(**model_settings):
 
 	@app.route('/score', methods=["POST"])
 	def score():
+
 		data = request.get_json()
-		print(request)
+		print(data)
+
 		try:
-			return jsonify(
-				sentiment=model.predict(data['text']),
-				status=200
-			)
-		except:
+			if 'tweets' in data.keys():
+				for tweet in data['tweets']:
+					tweet.update(
+						dict(
+							sentiment=model.predict(tweet['text'])
+						)
+					)
+				data.update(dict(status=200))
+
+			elif 'text' in data.keys():
+				data.update(
+					dict(
+						sentiment=model.predict(data['text']),
+						status=200
+					)
+				)
+
+			return jsonify(data)
+
+		except Exception as e:
+			print(e)
 			return jsonify(
 				status=500
 			)
