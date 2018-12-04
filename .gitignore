@@ -1,0 +1,3 @@
+app/data
+app/__pycache__
+app/models/mock/__pycache__
