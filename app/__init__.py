@@ -40,33 +40,27 @@ def make_app(**model_settings):
 	def score():
 
 		data = request.get_json()
-		print(data)
+		if data is None:
+			return jsonify(
+				error='Content-Type must be application/json'
+			), 403
 
-		try:
-			if 'tweets' in data.keys():
-				for tweet in data['tweets']:
-					tweet.update(
-						dict(
-							sentiment=model.predict(tweet['text'])
-						)
-					)
-				data.update(dict(status=200))
-
-			elif 'text' in data.keys():
-				data.update(
+		if 'tweets' not in data:
+			return jsonify(
+				error='Request data must contain "tweets"'
+			), 400
+		
+		for tweet in data['tweets']:
+			if len(tweet['text']) > 0:
+				score = 2 * model.predict(tweet['text']) - 1
+				tweet.update(
 					dict(
-						sentiment=model.predict(data['text']),
-						status=200
+						score = score,
+						sentiment = 'positive' if score > 0 else 'negative'
 					)
 				)
 
-			return jsonify(data)
-
-		except Exception as e:
-			print(e)
-			return jsonify(
-				status=500
-			)
+		return jsonify(data), 200
 
 	return app
 
