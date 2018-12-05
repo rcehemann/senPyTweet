@@ -22,6 +22,8 @@ elif not os.path.exists(cwd + '/app/models/' + model_settings['path']):
 	raise NameError(model_settings['path'] + ' ' + \
 		"not found in " + cwd + "/app/models/")
 
+model_settings['path'] = cwd + '/app/models' + model_settings['path']
+
 if __name__ == '__main__':
 	app = make_app(**model_settings)
 	app.run(**app_settings)

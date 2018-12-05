@@ -4,4 +4,4 @@ app_settings:
   debug: True
 
 model_settings:
-  path: mock
+  path: /spaCy
