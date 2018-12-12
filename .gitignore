@@ -1,3 +1,4 @@
 app/data
 app/__pycache__
 app/models/mock/__pycache__
+app/models/spaCy/__pycache__

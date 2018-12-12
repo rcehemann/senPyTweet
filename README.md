@@ -29,21 +29,21 @@ python run.py
 
 curl --request POST \
 	 --header "Content-Type: application/json" \
-	 --data "{\"tweets\":[{\"text\":\"senPyTweet stinks\", \"tweet_id\":0}, {\"text\":\"crypto is the future\", \"tweet_id\":1}]}" \
+	 --data "{\"model\":\"mock\",\"tweets\":[{\"text\":\"senPyTweet stinks\", \"tweet_id\":0}, {\"text\":\"crypto is the future\", \"tweet_id\":1}]}" \
 	 http://localhost:1337/score
 
 {
   "tweets": [
     {
-      "score": -0.9475799947977066, 
-      "sentiment": "negative", 
-      "text": "senPyTweet stinks", 
+      "score": -0.9475799947977066,
+      "sentiment": "negative",
+      "text": "senPyTweet stinks",
       "tweet_id": 0
-    }, 
+    },
     {
-      "score": 0.9649665355682373, 
-      "sentiment": "positive", 
-      "text": "crypto is the future", 
+      "score": 0.9649665355682373,
+      "sentiment": "positive",
+      "text": "crypto is the future",
       "tweet_id": 1
     }
   ]
