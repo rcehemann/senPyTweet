@@ -6,8 +6,8 @@ class SpaCy(SenPy):
     return None
 
   def load(self):
-    path = "/Users/thekeele/dev/senPyTweet/app/models/spaCy"
-    nlp = spacy.load(path)
+    nlp = spacy.load("./app/models/spaCy")
+
     def predict(text):
       return nlp(text).cats['POSITIVE']
 
