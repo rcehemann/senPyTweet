@@ -6,11 +6,12 @@
 from flask import Flask, request, jsonify
 from app.sen_py import SenPy
 
-def make_app(**model_settings):
+def make_app():
 	"""
 	make a Flask object with defined endpoints and model
 	"""
-	app   = Flask(__name__)
+	app = Flask(__name__)
+	loaded_models = {}
 
 	@app.route('/score', methods=["POST"])
 	def score():
@@ -26,8 +27,12 @@ def make_app(**model_settings):
 				error='Request data must contain "tweets"'
 			), 400
 
-		model = SenPy.load_model(data['model'])
-		model = model.load()
+		if data['model'] in loaded_models:
+			model = loaded_models[data['model']]
+		else:
+			model = SenPy.load_model(data['model'])
+			model = model.load()
+			loaded_models[data['model']] = model
 
 		for tweet in data['tweets']:
 			if len(tweet['text']) > 0:
