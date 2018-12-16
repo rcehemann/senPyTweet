@@ -1,2 +1,2 @@
-flask
-spacy
+flask==1.0.2
+spacy==2.0.18

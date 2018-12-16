@@ -4,20 +4,21 @@
 # rcehemann
 ########################################
 
+from app.sen_py import SenPy
 import random
 
-class MockSentimentModel(object):
-
+class Mock(SenPy):
 	def __init__(self):
+		return None
+
+	def load(self):
 		""" randomly set the rng seed """
 		seed = random.randint(0, int(1e6))
 		self.generator = random.Random(seed)
-		return None
+		return self
 
-	def predict(self, texts):
+	def predict(self, text):
 		""" random() gives a uniform random number between 0 and 1,
-			which we shift in accordance to the -1 -> 1 sentiment 
+			which we shift in accordance to the -1 -> 1 sentiment
 			convention """
-		if isinstance(texts, str):
-			texts = [texts]
-		return [2 * (self.generator.random() - 0.5) for _ in texts]
+		return (2 * self.generator.random() - 1)
