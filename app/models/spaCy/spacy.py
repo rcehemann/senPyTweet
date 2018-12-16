@@ -6,14 +6,8 @@ class SpaCy(SenPy):
     return None
 
   def load(self):
-    nlp = spacy.load("./app/models/spaCy")
-
-    def predict(text):
-      return nlp(text).cats['POSITIVE']
-
-    nlp.predict = predict
-
-    return nlp
+    self.nlp = spacy.load("./app/models/spaCy")
+    return self
 
   def predict(self, text):
-    return (2 * self.predict(text) - 1)
+    return (2 * self.nlp(text).cats['POSITIVE'] - 1)
