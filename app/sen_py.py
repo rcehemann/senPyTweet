@@ -10,8 +10,15 @@ class SenPy:
 
   def load_model(model):
     if model == 'mock':
-      from .models.mock.mock import Mock
+      from .models.mock import Mock
       return Mock()
     elif model == 'spacy':
-      from .models.spaCy.spacy import SpaCy
+      from .models.spacy import SpaCy
       return SpaCy()
+    elif 'scikit/' in model:
+      from .models.scikit import SciKit
+      return SciKit(model.split('scikit/')[-1])
+    else:
+      raise ValueError(
+        f"Invalid model file: {1}".format(model)
+      )
