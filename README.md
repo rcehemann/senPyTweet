@@ -26,7 +26,7 @@
 ```
 $ curl --request POST \
 	 --header "Content-Type: application/json" \
-	 --data "{\"model\":\"mock\",\"tweets\":[{\"text\":\"senPyTweet stinks\", \"tweet_id\":0}, {\"text\":\"crypto is the future\", \"tweet_id\":1}]}" \
+	 --data "{\"model\":\"spacy\",\"tweets\":[{\"text\":\"senPyTweet stinks\", \"tweet_id\":0}, {\"text\":\"crypto is the future\", \"tweet_id\":1}]}" \
 	 http://localhost:5000/score
 
 {
@@ -46,5 +46,11 @@ $ curl --request POST \
     }
   ]
 }
+
+#### supported models:
+* 'spacy' (spaCy v2.0 CNN)
+* 'mock'  (random sentiment)
+* 'scikit/lr' (sklearn logistic regression with L1 penalty)
+* 'scikit/nb' (sklearn multinomial naive bayes)
 
 ```
