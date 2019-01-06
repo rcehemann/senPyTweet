@@ -16,11 +16,11 @@
 #### setup
 `make install`
 
+#### display server options
+`make help`
+
 #### run development server
 `make dev`
-
-#### run production server
-`make server`
 
 #### example request / response
 ```
@@ -30,7 +30,7 @@ $ curl --request POST \
 	 http://localhost:5000/score
 
 {
-  "model": "mock",
+  "model": "spacy",
   "tweets": [
     {
       "score": -0.9475799947977066,
