@@ -46,11 +46,10 @@ $ curl --request POST \
     }
   ]
 }
+```
 
 #### supported models:
 * 'spacy' (spaCy v2.0 CNN)
 * 'mock'  (random sentiment)
 * 'scikit/lr' (sklearn logistic regression with L1 penalty)
 * 'scikit/nb' (sklearn multinomial naive bayes)
-
-```
