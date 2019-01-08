@@ -16,21 +16,21 @@
 #### setup
 `make install`
 
+#### display server options
+`make help`
+
 #### run development server
 `make dev`
-
-#### run production server
-`make server`
 
 #### example request / response
 ```
 $ curl --request POST \
 	 --header "Content-Type: application/json" \
-	 --data "{\"model\":\"mock\",\"tweets\":[{\"text\":\"senPyTweet stinks\", \"tweet_id\":0}, {\"text\":\"crypto is the future\", \"tweet_id\":1}]}" \
+	 --data "{\"model\":\"spacy\",\"tweets\":[{\"text\":\"senPyTweet stinks\", \"tweet_id\":0}, {\"text\":\"crypto is the future\", \"tweet_id\":1}]}" \
 	 http://localhost:5000/score
 
 {
-  "model": "mock",
+  "model": "spacy",
   "tweets": [
     {
       "score": -0.9475799947977066,
