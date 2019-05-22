@@ -17,6 +17,7 @@
  * python >= 3.7.0
  * Flask == 1.0.2
  * spaCy == 2.0.16 (for the default model)
+ * scikit-learn == 0.20.1 (for sklearn models)
 
 #### setup
 `make install`
