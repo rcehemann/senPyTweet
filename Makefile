@@ -12,8 +12,15 @@ dev:
 build:
 	docker build -t senpytweet:latest .
 
+network:
+	docker network create bitfeels
+
 run:
-	docker run -p 127.0.0.1:5000:5000/tcp senpytweet
+	docker run \
+	--network bitfeels \
+	--name senpytweet \
+	--publish 127.0.0.1:5000:5000/tcp \
+	senpytweet:latest
 
 prod:
 	docker tag senpytweet:latest thekeele/senpytweet:latest
