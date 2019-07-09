@@ -12,19 +12,27 @@ from __future__ import unicode_literals, print_function
 import plac
 from pathlib import Path
 import pandas as pd
-
+import sys, os, shutil
 import spacy
+import re
 from spacy.util import minibatch, compounding
-#spacy.prefer_cpu()
+spacy.require_gpu()
 
 @plac.annotations(
     model=("Model name. Defaults to blank 'en' model.", "option", "m", str),
     output_dir=("Optional output directory", "option", "o", Path),
     n_texts=("Number of texts to train from", "option", "t", int),
     n_iter=("Number of training iterations", "option", "n", int))
-def main(model=None, output_dir=None, n_iter=20, n_texts=250000):
+def main(model=None, output_dir=None, n_iter=20, n_texts=250000, seed=None):
+    if seed is None:
+      from random import randint
+      seed = randint(0, 1e6)
     if model is not None:
         nlp = spacy.load(model)  # load existing spaCy model
+        if output_dir == model:
+            if os.path.isdir(model+'_backup'):
+                shutil.rmtree(model+'_backup')
+            os.rename(model, model+'_backup')
         print("Loaded model '%s'" % model)
     else:
         nlp = spacy.load('en_core_web_sm')  # create blank Language class
@@ -40,7 +48,8 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=250000):
         textcat = nlp.get_pipe('textcat')
 
     # add label to text classifier
-    textcat.add_label('POSITIVE')
+    if 'POSITIVE' not in textcat.labels:
+        textcat.add_label('POSITIVE')
 
     # load the IMDB dataset
     print("Loading Sentiment 140 data...")
@@ -55,21 +64,25 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=250000):
     with nlp.disable_pipes(*other_pipes):  # only train textcat
         optimizer = nlp.begin_training()
         print("Training the model...")
-        print('{:^5}\t{:^5}\t{:^5}\t{:^5}'.format('LOSS', 'P', 'R', 'F'))
-        for i in range(n_iter):
-            losses = {}
-            # batch up the examples using spaCy's minibatch
-            batches = minibatch(train_data, size=compounding(4., 32., 1.001))
-            for batch in batches:
-                texts, annotations = zip(*batch)
-                nlp.update(texts, annotations, sgd=optimizer, drop=0.2,
-                           losses=losses)
-            with textcat.model.use_params(optimizer.averages):
-                # evaluate on the dev data split off in load_data()
-                scores = evaluate(nlp.tokenizer, textcat, dev_texts, dev_cats)
-            print('{0:.3f}\t{1:.3f}\t{2:.3f}\t{3:.3f}'  # print a simple table
-                  .format(losses['textcat'], scores['textcat_p'],
-                          scores['textcat_r'], scores['textcat_f']))
+        with open("training_log.dat", 'w') as f:
+            print('{:^5}\t{:^5}\t{:^5}\t{:^5}'.format('LOSS', 'P', 'R', 'F'))
+            for i in range(n_iter):
+                losses = {}
+                # batch up the examples using spaCy's minibatch
+                batches = minibatch(train_data, size=compounding(1., 32., 1.001))
+                for batch in batches:
+                    texts, annotations = zip(*batch)
+                    nlp.update(texts, annotations, sgd=optimizer, drop=0.2,
+                            losses=losses)
+                with textcat.model.use_params(optimizer.averages):
+                    # evaluate on the dev data split off in load_data()
+                    scores = evaluate(nlp.tokenizer, textcat, dev_texts, dev_cats)
+                print('{0:.3f}\t{1:.3f}\t{2:.3f}\t{3:.3f}'  # print a simple table
+                    .format(losses['textcat'], scores['textcat_p'],
+                            scores['textcat_r'], scores['textcat_f']))
+                f.write('{0:.3f}\t{1:.3f}\t{2:.3f}\t{3:.3f}'  # print a simple table
+                    .format(losses['textcat'], scores['textcat_p'],
+                            scores['textcat_r'], scores['textcat_f']))
 
     # test the trained model
     test_text = "This movie sucked"
@@ -93,10 +106,11 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=250000):
 def load_data(limit=0, split=0.8):
     """Load data from the IMDB dataset."""
     # Partition off part of the train data for evaluation
-    data = pd.read_csv('../../data/training.1600000.processed.noemoticon.csv',
+    data = pd.read_csv('./app/data/training.1600000.processed.noemoticon.csv',
                        encoding='iso_8859_1')
-    train_data = data.sample(frac=1.0)[['text', 'sentiment']].values
-    train_data = train_data[-limit:]
+    train_data = data.sample(frac=1.0)[['tweet', 'sentiment']]
+    train_data['tweet'] = train_data['tweet'].apply(clean_tweet)
+    train_data = train_data.values[-limit:]
     texts, labels = zip(*train_data)
     cats = [{'POSITIVE': bool(y)} for y in labels]
     split = int(len(train_data) * split)
@@ -127,6 +141,22 @@ def evaluate(tokenizer, textcat, texts, cats):
     f_score = 2 * (precision * recall) / (precision + recall)
     return {'textcat_p': precision, 'textcat_r': recall, 'textcat_f': f_score}
 
+def clean_tweet(text):
+    # remove links, replace with LINK token
+    urls = r'(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?'
+    text = re.sub(urls, 'LINK', text.lower())
+
+    # remove non alphanumerics/spaces
+    text = re.sub('[^\w\d\s]', '', text)
+
+    # replace numbers with the token 'NUMBER'
+    text = re.sub('\d+[\,?\d]*', 'NUMBER', text)
+
+    # replace characters repeated more than twice with
+    # just two occurrences
+    text = re.sub(r'(.)\1{2,}', "\\1\\1", text)
+
+    return text.strip() # remove preceding and trailing whitespace
 
 if __name__ == '__main__':
     plac.call(main)
