@@ -5,6 +5,7 @@
 
 from flask import Flask, request, jsonify
 from app.sen_py import SenPy
+from app.models.spaCy.train import main as train
 
 def make_app():
 	"""
