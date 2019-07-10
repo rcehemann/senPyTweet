@@ -143,7 +143,7 @@ def evaluate(tokenizer, textcat, texts, cats):
 
 def clean_tweet(text):
     # remove links, replace with LINK token
-    urls = r'(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?'
+    urls = r'((http|ftp|https):\/\/[\w\-]+(\.[\w\-]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?)'
     text = re.sub(urls, 'LINK', text.lower())
 
     # remove non alphanumerics/spaces
@@ -155,6 +155,9 @@ def clean_tweet(text):
     # replace characters repeated more than twice with
     # just two occurrences
     text = re.sub(r'(.)\1{2,}', "\\1\\1", text)
+
+    # replace duplicate whitespace with single whitespace
+    text = re.sub(r'\s{2}', ' ', text)
 
     return text.strip() # remove preceding and trailing whitespace
 
