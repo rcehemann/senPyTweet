@@ -69,7 +69,7 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=250000, seed=None):
             for i in range(n_iter):
                 losses = {}
                 # batch up the examples using spaCy's minibatch
-                batches = minibatch(train_data, size=compounding(1., 32., 1.001))
+                batches = minibatch(train_data, size=compounding(1., 32., 1.1))
                 for batch in batches:
                     texts, annotations = zip(*batch)
                     nlp.update(texts, annotations, sgd=optimizer, drop=0.2,
@@ -109,7 +109,7 @@ def load_data(limit=0, split=0.8):
     data = pd.read_csv('./app/data/training.1600000.processed.noemoticon.csv',
                        encoding='iso_8859_1')
     train_data = data.sample(frac=1.0)[['tweet', 'sentiment']]
-    train_data['tweet'] = train_data['tweet'].apply(clean_tweet)
+    #train_data['tweet'] = train_data['tweet'].apply(clean_tweet)
     train_data = train_data.values[-limit:]
     texts, labels = zip(*train_data)
     cats = [{'POSITIVE': bool(y)} for y in labels]
@@ -144,13 +144,13 @@ def evaluate(tokenizer, textcat, texts, cats):
 def clean_tweet(text):
     # remove links, replace with LINK token
     urls = r'((http|ftp|https):\/\/[\w\-]+(\.[\w\-]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?)'
-    text = re.sub(urls, 'LINK', text.lower())
+    text = re.sub(urls, '*LINK*', text.lower())
 
     # remove non alphanumerics/spaces
-    text = re.sub('[^\w\d\s]', '', text)
+    #text = re.sub('[^\w\d\s]', '', text)
 
     # replace numbers with the token 'NUMBER'
-    text = re.sub('\d+[\,?\d]*', 'NUMBER', text)
+    text = re.sub('\d+[\,?\d]*', '*NUMBER*', text)
 
     # replace characters repeated more than twice with
     # just two occurrences
