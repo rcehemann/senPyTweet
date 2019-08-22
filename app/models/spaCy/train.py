@@ -16,6 +16,7 @@ import sys, os, shutil
 import spacy
 import re
 from spacy.util import minibatch, compounding
+from app.sen_py import clean_tweet
 spacy.require_gpu()
 
 @plac.annotations(
@@ -41,7 +42,13 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=250000, seed=None):
     # add the text classifier to the pipeline if it doesn't exist
     # nlp.create_pipe works for built-ins that are registered with spaCy
     if 'textcat' not in nlp.pipe_names:
-        textcat = nlp.create_pipe('textcat')
+        textcat = nlp.create_pipe(
+                      'textcat',
+                      config={
+                        'architecture':'ensemble',
+                        'ngram_size':4
+                      }
+                  )
         nlp.add_pipe(textcat, last=True)
     # otherwise, get it, so we can add labels to it
     else:
@@ -102,14 +109,13 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=250000, seed=None):
         doc2 = nlp2(test_text)
         print(test_text, doc2.cats)
 
-
 def load_data(limit=0, split=0.8):
     """Load data from the IMDB dataset."""
     # Partition off part of the train data for evaluation
     data = pd.read_csv('./app/data/training.1600000.processed.noemoticon.csv',
                        encoding='iso_8859_1')
     train_data = data.sample(frac=1.0)[['tweet', 'sentiment']]
-    #train_data['tweet'] = train_data['tweet'].apply(clean_tweet)
+    train_data['tweet'] = train_data['tweet'].apply(clean_tweet)
     train_data = train_data.values[-limit:]
     texts, labels = zip(*train_data)
     cats = [{'POSITIVE': bool(y)} for y in labels]
@@ -140,26 +146,6 @@ def evaluate(tokenizer, textcat, texts, cats):
     recall = tp / (tp + fn)
     f_score = 2 * (precision * recall) / (precision + recall)
     return {'textcat_p': precision, 'textcat_r': recall, 'textcat_f': f_score}
-
-def clean_tweet(text):
-    # remove links, replace with LINK token
-    urls = r'((http|ftp|https):\/\/[\w\-]+(\.[\w\-]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?)'
-    text = re.sub(urls, '*LINK*', text.lower())
-
-    # remove non alphanumerics/spaces
-    #text = re.sub('[^\w\d\s]', '', text)
-
-    # replace numbers with the token 'NUMBER'
-    text = re.sub('\d+[\,?\d]*', '*NUMBER*', text)
-
-    # replace characters repeated more than twice with
-    # just two occurrences
-    text = re.sub(r'(.)\1{2,}', "\\1\\1", text)
-
-    # replace duplicate whitespace with single whitespace
-    text = re.sub(r'\s{2}', ' ', text)
-
-    return text.strip() # remove preceding and trailing whitespace
 
 if __name__ == '__main__':
     plac.call(main)

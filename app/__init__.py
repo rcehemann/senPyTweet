@@ -4,7 +4,7 @@
 ##########################
 
 from flask import Flask, request, jsonify
-from app.sen_py import SenPy
+from app.sen_py import SenPy, clean_tweet
 from app.models.spaCy.train import main as train
 
 def make_app():
@@ -37,7 +37,7 @@ def make_app():
 
 		for tweet in data['tweets']:
 			if len(tweet['text']) > 0:
-				score = model.predict(tweet['text'])
+				score = model.predict(clean_tweet(tweet['text']))
 				tweet.update(
 					dict(
 						score = score,
