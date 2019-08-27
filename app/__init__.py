@@ -37,7 +37,8 @@ def make_app():
 
 		for tweet in data['tweets']:
 			if len(tweet['text']) > 0:
-				score = model.predict(clean_tweet(tweet['text']))
+				#score = model.predict(clean_tweet(tweet['text']))
+				score = model.predict(tweet['text'])
 				tweet.update(
 					dict(
 						score = score,

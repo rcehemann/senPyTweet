@@ -28,13 +28,13 @@ class SenPy:
 def clean_tweet(text):
     # remove links, replace with LINK token
     urls = r'((http|ftp|https):\/\/[\w\-]+(\.[\w\-]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?)'
-    text = re.sub(urls, '*LINK*', text.lower())
+    text = re.sub(urls, '/LINK/', text.lower())
 
     # remove non alphanumerics/spaces
-    text = re.sub('[^\w\d\s]', '', text)
+    #text = re.sub('[^\w\d\s]', '', text)
 
     # replace numbers with the token 'NUMBER'
-    text = re.sub('\d+[\,?\d]*', '*NUMBER*', text)
+    text = re.sub('\d+[\,?\d]*', '/NUMBER/', text)
 
     # replace characters repeated more than twice with
     # just two occurrences

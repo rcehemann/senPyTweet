@@ -14,7 +14,6 @@ from pathlib import Path
 import pandas as pd
 import sys, os, shutil
 import spacy
-import re
 from spacy.util import minibatch, compounding
 from app.sen_py import clean_tweet
 spacy.require_gpu()
@@ -23,8 +22,9 @@ spacy.require_gpu()
     model=("Model name. Defaults to blank 'en' model.", "option", "m", str),
     output_dir=("Optional output directory", "option", "o", Path),
     n_texts=("Number of texts to train from", "option", "t", int),
-    n_iter=("Number of training iterations", "option", "n", int))
-def main(model=None, output_dir=None, n_iter=20, n_texts=250000, seed=None):
+    n_iter=("Number of training iterations", "option", "n", int),
+    n_gram_size=("N-gram size in bag of words component", "g", int))
+def main(model=None, output_dir=None, n_iter=20, n_texts=250000, seed=None, n_gram_size=2):
     if seed is None:
       from random import randint
       seed = randint(0, 1e6)
@@ -46,7 +46,7 @@ def main(model=None, output_dir=None, n_iter=20, n_texts=250000, seed=None):
                       'textcat',
                       config={
                         'architecture':'ensemble',
-                        'ngram_size':4
+                        'ngram_size':n_gram_size
                       }
                   )
         nlp.add_pipe(textcat, last=True)
@@ -115,7 +115,7 @@ def load_data(limit=0, split=0.8):
     data = pd.read_csv('./app/data/training.1600000.processed.noemoticon.csv',
                        encoding='iso_8859_1')
     train_data = data.sample(frac=1.0)[['tweet', 'sentiment']]
-    train_data['tweet'] = train_data['tweet'].apply(clean_tweet)
+    #train_data['tweet'] = train_data['tweet'].apply(clean_tweet)
     train_data = train_data.values[-limit:]
     texts, labels = zip(*train_data)
     cats = [{'POSITIVE': bool(y)} for y in labels]
