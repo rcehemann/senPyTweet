@@ -16,7 +16,7 @@ import sys, os, shutil
 import spacy
 from spacy.util import minibatch, compounding
 from app.sen_py import clean_tweet
-spacy.require_gpu()
+spacy.prefer_gpu()
 
 @plac.annotations(
     model=("Model name. Defaults to blank 'en' model.", "option", "m", str),
