@@ -1,4 +1,6 @@
 {
+  "architecture":"ensemble",
+  "ngram_size":4,
   "labels":[
     "POSITIVE"
   ],

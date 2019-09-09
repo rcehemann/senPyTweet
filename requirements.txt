@@ -1,3 +1,4 @@
 flask==1.0.2
-spacy==2.0.18
+spacy==2.1.4
 scikit-learn==0.21.1
+pandas==0.25.1
